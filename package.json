@@ -1,0 +1,33 @@
+{
+  "name": "poc-playwright",
+  "version": "1.0.0",
+  "description": "Playwright automation testing project with Page Object Model pattern",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:login": "playwright test tests/login.spec.ts",
+    "test:update-user": "playwright test tests/update-user-info.spec.ts",
+    "test:update-user:headed": "playwright test tests/update-user-info.spec.ts --headed --project=chromium",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:chrome": "playwright test --project=chromium"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "pom"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  }
+}
