@@ -31,7 +31,7 @@ test.describe('Login Tests', () => {
    * 4. Click the Login button.
    * 5. Verify successful login via redirect or visible element.
    */
-  test('TC001: Should login successfully with valid credentials', async ({ loginPage, page }) => {
+  test('@smoke @regression TC001: Should login successfully with valid credentials', async ({ loginPage, page }) => {
     // Arrange: Prepare test data
     const username = TestData.VALID_USERNAME;
     const password = TestData.VALID_PASSWORD;
@@ -52,7 +52,7 @@ test.describe('Login Tests', () => {
    *
    * Goal: Verify error message is shown when username is invalid.
    */
-  test('TC002: Should show error message with invalid username', async ({ loginPage }) => {
+  test('@regression TC002: Should show error message with invalid username', async ({ loginPage }) => {
     // Arrange
     const invalidUsername = TestData.INVALID_USERNAME;
     const password = TestData.VALID_PASSWORD;
@@ -92,7 +92,7 @@ test.describe('Login Tests', () => {
    *
    * Goal: Verify error message is shown when password is invalid.
    */
-  test('TC003: Should show error message with invalid password', async ({ loginPage }) => {
+  test('@regression TC003: Should show error message with invalid password', async ({ loginPage }) => {
     // Arrange
     const username = TestData.VALID_USERNAME;
     const invalidPassword = TestData.INVALID_PASSWORD;
@@ -117,7 +117,7 @@ test.describe('Login Tests', () => {
    *
    * Goal: Verify validation shows 'Required' when username is empty.
    */
-  test('TC004: Should show error when username is empty', async ({ loginPage }) => {
+  test('@regression TC004: Should show error when username is empty', async ({ loginPage }) => {
     // Arrange
     const emptyUsername = TestData.EMPTY_STRING;
     const password = TestData.VALID_PASSWORD;
@@ -140,7 +140,7 @@ test.describe('Login Tests', () => {
    *
    * Goal: Verify validation shows 'Required' when password is empty.
    */
-  test('TC005: Should show error when password is empty', async ({ loginPage }) => {
+  test('@regression TC005: Should show error when password is empty', async ({ loginPage }) => {
     // Arrange
     const username = TestData.VALID_USERNAME;
     const emptyPassword = TestData.EMPTY_STRING;
@@ -163,7 +163,7 @@ test.describe('Login Tests', () => {
    *
    * Goal: Demonstrate how to use the auto-login fixture.
    */
-  test('TC006: Should use authenticatedPage fixture', async ({ authenticatedPage, page }) => {
+  test('@demo TC006: Should use authenticatedPage fixture', async ({ authenticatedPage, page }) => {
     // authenticatedPage fixture has already logged in.
     // We can start assertions directly in an authenticated state.
     Logger.info('Using authenticated page fixture');
@@ -171,4 +171,6 @@ test.describe('Login Tests', () => {
     await expect(page).toHaveURL(new RegExp(TestData.DASHBOARD_URL.replace(/\//g, '\\/')));
     Logger.info('Successfully authenticated via fixture');
   });
+
+ 
 });

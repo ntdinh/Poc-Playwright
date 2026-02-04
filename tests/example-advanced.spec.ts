@@ -19,7 +19,7 @@ test.describe('Advanced Features Demo', () => {
    * Demo 1: Using authenticatedPage fixture.
    * This fixture automatically logs in before the test starts.
    */
-  test('Demo: Using authenticatedPage fixture', async ({ authenticatedPage, page }) => {
+  test('@demo Demo: Using authenticatedPage fixture', async ({ authenticatedPage, page }) => {
     Logger.info('Test started with authenticated page');
     
     // authenticatedPage has already logged in.
@@ -32,7 +32,7 @@ test.describe('Advanced Features Demo', () => {
   /**
    * Demo 2: Using Component Pattern.
    */
-  test('Demo: Using Component Pattern', async ({ loginPage, page }) => {
+  test('@demo Demo: Using Component Pattern', async ({ loginPage, page }) => {
     Logger.step(1, 'Navigate to login page');
     await loginPage.navigateToLogin();
 
@@ -61,7 +61,7 @@ test.describe('Advanced Features Demo', () => {
    *
    * Note: Uncomment and adjust according to your real API.
    */
-  test.skip('Demo: Using API Helper', async ({ request }) => {
+  test.skip('@demo Demo: Using API Helper', async ({ request }) => {
     Logger.info('Demo: API Helper usage');
     
     const api = new APIHelper(request);
@@ -84,7 +84,7 @@ test.describe('Advanced Features Demo', () => {
   /**
    * Demo 4: Using Logger with different log levels.
    */
-  test('Demo: Using Logger', async ({ loginPage, page }) => {
+  test('@demo Demo: Using Logger', async ({ loginPage, page }) => {
     Logger.debug('Debug message - detailed information');
     Logger.info('Info message - general information');
     Logger.warn('Warn message - warning information');
@@ -105,7 +105,7 @@ test.describe('Advanced Features Demo', () => {
   /**
    * Demo 5: Test with multiple assertions and better error handling.
    */
-  test('Demo: Better error handling and assertions', async ({ loginPage, page }) => {
+  test('@demo Demo: Better error handling and assertions', async ({ loginPage, page }) => {
     await loginPage.navigateToLogin();
 
     // Verify page loaded correctly

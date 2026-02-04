@@ -26,6 +26,11 @@ export default defineConfig({
     ['html'],
     ['list'],
     ['json', { outputFile: 'test-results/results.json' }],
+    /**
+     * JUnit reporter: useful for CI servers (Jenkins, GitLab, Azure DevOps, etc.)
+     * where test results are parsed from XML.
+     */
+    ['junit', { outputFile: 'test-results/junit-results.xml' }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -64,52 +69,35 @@ export default defineConfig({
       name: 'chromium',
       use: { 
         ...devices['Desktop Chrome'],
-        // You can override settings for Chromium here, for example:
-        // viewport: { width: 1920, height: 1080 },
-        // headless: false, // Run with visible browser
       },
     },
 
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //     // Override Firefox-specific settings here if needed
-    //   },
-    // },
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
 
-    // {
-    //   name: 'webkit',
-    //   use: {
-    //     ...devices['Desktop Safari'],
-    //     // Override Safari-specific settings here if needed
-    //   },
-    // },
+    {
+      name: 'webkit',
+      use: {
+        ...devices['Desktop Safari'],
+      },
+    },
 
-    // Mobile Browsers - uncomment to enable
+    // Mobile Browsers - uncomment to enable when needed
     // {
     //   name: 'Mobile Chrome',
     //   use: {
     //     ...devices['Pixel 5'],
-    //     // Example: test on Chrome mobile with Pixel 5 viewport
     //   },
     // },
     // {
     //   name: 'Mobile Safari',
     //   use: {
     //     ...devices['iPhone 12'],
-    //     // Example: test on Safari mobile with iPhone 12 viewport
     //   },
-    // },
-    
-    // You can add more devices, for example:
-    // {
-    //   name: 'iPad',
-    //   use: { ...devices['iPad Pro'] },
-    // },
-    // {
-    //   name: 'Tablet',
-    //   use: { ...devices['iPad Air'] },
     // },
   ],
 

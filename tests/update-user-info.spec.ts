@@ -22,7 +22,7 @@ test.describe('Update User Information Tests', () => {
    * 6. Click Save
    * 7. Verify \"Successfully Updated\" message is visible
    */
-  test('TC001: Should update user information successfully', async ({ authenticatedPage, page }) => {
+  test('@regression TC001: Should update user information successfully', async ({ authenticatedPage, page }) => {
     // Arrange: authenticatedPage fixture has already logged in
     Logger.info('Test started - User is already authenticated');
     
@@ -60,7 +60,7 @@ test.describe('Update User Information Tests', () => {
    *
    * Demonstrates using updateFullName to update all name fields at once.
    */
-  test('TC002: Should update full name using updateFullName method', async ({ authenticatedPage, page }) => {
+  test('@regression TC002: Should update full name using updateFullName method', async ({ authenticatedPage, page }) => {
     Logger.info('Test started - Using updateFullName method');
     
     const myInfoPage = new MyInfoPage(page);

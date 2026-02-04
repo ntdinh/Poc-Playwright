@@ -1,5 +1,6 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { getBaseURL } from '../config/environment';
+import { Logger } from '../utils/Logger';
 
 /**
  * BasePage - Base class for all Page Objects.
@@ -14,10 +15,58 @@ import { getBaseURL } from '../config/environment';
 export class BasePage {
   readonly page: Page;
   protected readonly baseURL: string;
+  /**
+   * Default timeout (ms) used by most wait helpers.
+   * Can be overridden per-call via options.
+   */
+  protected readonly defaultTimeout: number = 5000;
+
+  /**
+   * Default number of retries for unstable actions
+   * like click / fill in highly dynamic UIs.
+   */
+  protected readonly defaultRetryCount: number = 2;
 
   constructor(page: Page) {
     this.page = page;
     this.baseURL = getBaseURL();
+  }
+
+  /**
+   * Generic retry wrapper for flaky actions.
+   * Logs attempts and errors to help debugging.
+   */
+  protected async withRetry<T>(
+    actionName: string,
+    fn: () => Promise<T>,
+    retryCount: number = this.defaultRetryCount
+  ): Promise<T> {
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= retryCount; attempt++) {
+      try {
+        Logger.debug(`BasePage action "${actionName}" attempt ${attempt}/${retryCount}`);
+        const result = await fn();
+        if (attempt > 1) {
+          Logger.info(`BasePage action "${actionName}" succeeded on attempt ${attempt}`);
+        }
+        return result;
+      } catch (error) {
+        lastError = error;
+        Logger.warn(`BasePage action "${actionName}" failed on attempt ${attempt}/${retryCount}`, error);
+
+        if (attempt === retryCount) {
+          Logger.error(`BasePage action "${actionName}" failed after ${retryCount} attempts`);
+          throw error;
+        }
+
+        // Small backoff before retrying
+        await this.page.waitForTimeout(250);
+      }
+    }
+
+    // Should never reach here, but satisfies TypeScript.
+    throw lastError as Error;
   }
 
   /**
@@ -66,10 +115,15 @@ export class BasePage {
    */
   async click(
     locator: Locator,
-    options?: { timeout?: number; force?: boolean }
+    options?: { timeout?: number; force?: boolean; retryCount?: number }
   ): Promise<void> {
-    await locator.waitFor({ state: 'visible', timeout: options?.timeout || 5000 });
-    await locator.click({ force: options?.force || false });
+    const timeout = options?.timeout ?? this.defaultTimeout;
+    const retryCount = options?.retryCount ?? this.defaultRetryCount;
+
+    await this.withRetry('click', async () => {
+      await locator.waitFor({ state: 'visible', timeout });
+      await locator.click({ force: options?.force ?? false });
+    }, retryCount);
   }
 
   /**
@@ -81,13 +135,28 @@ export class BasePage {
   async fill(
     locator: Locator,
     text: string,
-    options?: { timeout?: number; clear?: boolean }
+    options?: { timeout?: number; clear?: boolean; retryCount?: number }
   ): Promise<void> {
-    await locator.waitFor({ state: 'visible', timeout: options?.timeout || 5000 });
-    if (options?.clear !== false) {
-      await locator.clear();
-    }
-    await locator.fill(text);
+    const timeout = options?.timeout ?? this.defaultTimeout;
+    const retryCount = options?.retryCount ?? this.defaultRetryCount;
+
+    await this.withRetry('fill', async () => {
+      await locator.waitFor({ state: 'visible', timeout });
+      if (options?.clear !== false) {
+        // Note: clear() may not be supported on all elements.
+        // If it fails, we fall back to filling empty string first.
+        try {
+          if (typeof (locator as any).clear === 'function') {
+            await (locator as any).clear();
+          } else {
+            await locator.fill('');
+          }
+        } catch {
+          await locator.fill('');
+        }
+      }
+      await locator.fill(text);
+    }, retryCount);
   }
 
   /**
@@ -105,7 +174,7 @@ export class BasePage {
    * @param locator - Element locator.
    * @param timeout - Max timeout (ms).
    */
-  async waitForElement(locator: Locator, timeout: number = 5000): Promise<void> {
+  async waitForElement(locator: Locator, timeout: number = this.defaultTimeout): Promise<void> {
     await locator.waitFor({ state: 'visible', timeout });
   }
 
@@ -114,7 +183,7 @@ export class BasePage {
    * @param locator - Element locator.
    * @param timeout - Max timeout (ms).
    */
-  async waitForElementHidden(locator: Locator, timeout: number = 5000): Promise<void> {
+  async waitForElementHidden(locator: Locator, timeout: number = this.defaultTimeout): Promise<void> {
     await locator.waitFor({ state: 'hidden', timeout });
   }
 

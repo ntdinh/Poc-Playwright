@@ -15,7 +15,12 @@
     "test:chromium": "playwright test --project=chromium",
     "test:firefox": "playwright test --project=firefox",
     "test:webkit": "playwright test --project=webkit",
-    "test:chrome": "playwright test --project=chromium"
+    "test:chrome": "playwright test --project=chromium",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:regression": "playwright test --grep @regression",
+    "test:api": "playwright test --grep @api",
+    "test:a11y": "playwright test --grep @a11y",
+    "test:demo": "playwright test --grep @demo"
   },
   "keywords": [
     "playwright",

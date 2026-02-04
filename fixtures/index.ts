@@ -17,6 +17,8 @@ import { getCredentials } from '../config/environment';
 export type TestFixtures = {
   loginPage: LoginPage;
   authenticatedPage: BasePage;
+  adminPage: BasePage;
+  userPage: BasePage;
 };
 
 // Extend base test with custom fixtures
@@ -55,6 +57,35 @@ export const test = base.extend<TestFixtures>({
     // Create BasePage instance to return
     const authenticatedPage = new BasePage(page);
     await use(authenticatedPage);
+  },
+
+  /**
+   * Fixture: adminPage
+   * Tương tự authenticatedPage nhưng rõ nghĩa là role admin.
+   */
+  adminPage: async ({ page, loginPage }, use) => {
+    const credentials = getCredentials('admin');
+    await loginPage.navigateToLogin();
+    await loginPage.login(credentials.username, credentials.password);
+    await page.waitForLoadState('networkidle');
+    await page.waitForURL(/.*dashboard\/index.*/, { timeout: 10000 });
+
+    const adminPage = new BasePage(page);
+    await use(adminPage);
+  },
+
+  /**
+   * Fixture: userPage
+   * Đăng nhập với role user (non-admin).
+   */
+  userPage: async ({ page, loginPage }, use) => {
+    const credentials = getCredentials('user');
+    await loginPage.navigateToLogin();
+    await loginPage.login(credentials.username, credentials.password);
+    await page.waitForLoadState('networkidle');
+
+    const userPage = new BasePage(page);
+    await use(userPage);
   },
 });
 
