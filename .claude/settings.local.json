@@ -4,7 +4,10 @@
       "Bash(dir:*)",
       "Bash(findstr:*)",
       "Bash(Get-ChildItem:*)",
-      "Bash(Select-Object:*)"
+      "Bash(Select-Object:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

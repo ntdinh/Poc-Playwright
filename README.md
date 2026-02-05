@@ -280,6 +280,9 @@ npx playwright test tests/update-user-info.spec.ts --headed --project=chromium -
 
 # Run with debug mode
 npx playwright test tests/update-user-info.spec.ts --debug --project=chromium
+
+# Run single file with open brower
+npx playwright test tests/login-fluent.spec.ts --headed
 ```
 
 ### 4. View report & debug on failure
