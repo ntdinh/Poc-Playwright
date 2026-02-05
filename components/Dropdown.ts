@@ -2,12 +2,12 @@ import { Locator, Page } from '@playwright/test';
 import { BaseComponent } from './BaseComponent';
 
 /**
- * Dropdown Component - ví dụ cho component phức tạp hơn.
+ * Dropdown Component - example of a more complex component.
  *
- * Thiết kế:
- * - rootLocator trỏ tới container của dropdown.
- * - triggerLocator là element dùng để mở dropdown.
- * - optionLocator là template để chọn option theo text.
+ * Design:
+ * - `rootLocator` points to the dropdown container.
+ * - `triggerLocator` is the element used to open the dropdown.
+ * - `optionLocator` is a template to select an option by text.
  */
 export class Dropdown extends BaseComponent {
   private triggerLocator: Locator;
@@ -21,14 +21,14 @@ export class Dropdown extends BaseComponent {
   }
 
   /**
-   * Mở dropdown.
+   * Opens the dropdown.
    */
   async open(): Promise<void> {
     await this.basePage.click(this.triggerLocator);
   }
 
   /**
-   * Chọn option theo text.
+   * Selects an option by its text.
    */
   async selectByText(text: string): Promise<void> {
     await this.open();

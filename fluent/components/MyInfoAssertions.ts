@@ -7,8 +7,8 @@ import { TestData } from '../../utils/TestData';
 /**
  * MyInfoAssertions (Fluent)
  * ------------------------
- * Gom nhóm các bước kiểm tra sau khi save user information.
- * Dùng kèm với `MyInfoFormComponent` để tạo nên fluent API:
+ * Groups verification steps after saving user information.
+ * Used together with `MyInfoFormComponent` to build a fluent API:
  *
  * await fluentMyInfo
  *   .form()
@@ -26,7 +26,7 @@ export class MyInfoAssertions extends FluentComponentBase {
   }
 
   /**
-   * Kỳ vọng save thành công và hiển thị success message.
+   * Expects saving to succeed and the success message to be displayed.
    */
   async expectSuccess(): Promise<void> {
     Logger.step(3, 'Fluent: Verifying success message after update');
@@ -38,8 +38,8 @@ export class MyInfoAssertions extends FluentComponentBase {
   }
 
   /**
-   * Kỳ vọng success message visible.
-   * Sử dụng expect trực tiếp từ Playwright.
+   * Expects the success message to be visible.
+   * Uses Playwright's `expect` directly.
    */
   async expectSuccessMessageVisible(): Promise<void> {
     Logger.info('Fluent: Verifying success message is visible');

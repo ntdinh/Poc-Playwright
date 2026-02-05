@@ -8,9 +8,9 @@ import { Logger } from '../../utils/Logger';
 /**
  * FluentMyInfoPage
  * ---------------
- * Entry point chính cho Fluent Interface liên quan tới My Info (update user profile).
+ * Main entry point for the Fluent Interface related to My Info (update user profile).
  *
- * Ví dụ sử dụng:
+ * Example usage:
  *
  * const fluentMyInfo = await FluentMyInfoPage.start(page);
  *
@@ -31,8 +31,8 @@ export class FluentMyInfoPage extends FluentComponentBase {
   }
 
   /**
-   * Khởi tạo FluentMyInfoPage từ page đã authenticated.
-   * Giả định user đã login và đang ở dashboard.
+   * Initializes `FluentMyInfoPage` from an already authenticated page.
+   * Assumes the user is logged in and currently on the dashboard.
    */
   static async start(page: Page): Promise<FluentMyInfoPage> {
     const myInfoPage = new MyInfoPage(page);
@@ -47,22 +47,22 @@ export class FluentMyInfoPage extends FluentComponentBase {
   }
 
   /**
-   * Trả về fluent component đại diện cho form update user info.
-   * Component này chịu trách nhiệm build các bước nhập liệu.
+   * Returns the fluent component representing the user info update form.
+   * This component is responsible for building the data entry steps.
    */
   form(): MyInfoFormComponent {
     return new MyInfoFormComponent(this.myInfoPage);
   }
 
   /**
-   * Trả về fluent component chuyên xử lý assert sau khi save.
+   * Returns the fluent component responsible for assertions after saving.
    */
   assertions(): MyInfoAssertions {
     return new MyInfoAssertions(this.myInfoPage);
   }
 
   /**
-   * Hỗ trợ scenario dùng authenticatedPage fixture.
+   * Supports scenarios that use the `authenticatedPage` fixture.
    */
   static async fromAuthenticatedPage(page: Page): Promise<FluentMyInfoPage> {
     Logger.info('Fluent: Using existing authenticated page for My Info');

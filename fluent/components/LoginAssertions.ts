@@ -7,8 +7,8 @@ import { TestData } from '../../utils/TestData';
 /**
  * LoginAssertions (Fluent)
  * ------------------------
- * Gom nhóm các bước kiểm tra sau khi submit form login.
- * Dùng kèm với `LoginFormComponent` để tạo nên fluent API:
+ * Groups verification steps after submitting the login form.
+ * Used together with `LoginFormComponent` to build a fluent API:
  *
  * await fluentLogin
  *   .form()
@@ -26,7 +26,7 @@ export class LoginAssertions extends FluentComponentBase {
   }
 
   /**
-   * Kỳ vọng login thành công và redirect tới dashboard.
+   * Expects login to succeed and redirect to the dashboard.
    */
   async expectSuccess(): Promise<void> {
     Logger.step(3, 'Fluent: Verifying login success');
@@ -35,13 +35,13 @@ export class LoginAssertions extends FluentComponentBase {
   }
 
   /**
-   * Kỳ vọng hiển thị lỗi "invalid credentials".
-   * Logic tương tự như các test cũ để giữ behaviour.
+   * Expects the "invalid credentials" error to be displayed.
+   * Logic is similar to the legacy tests to keep the same behaviour.
    */
   async expectInvalidCredentialsError(): Promise<void> {
     Logger.step(3, 'Fluent: Verifying invalid credentials error');
 
-    // Chờ error message xuất hiện
+    // Wait for the error message to appear
     try {
       await this.loginPage.waitForElement(this.loginPage.errorMessage, 10000);
       await expect(this.loginPage.errorMessage).toBeVisible({ timeout: 10000 });
@@ -61,7 +61,7 @@ export class LoginAssertions extends FluentComponentBase {
   }
 
   /**
-   * Kỳ vọng hiển thị lỗi "Required" cho username rỗng.
+   * Expects the "Required" error to be shown for an empty username.
    */
   async expectUsernameRequiredError(): Promise<void> {
     Logger.step(3, 'Fluent: Verifying required validation for empty username');
@@ -71,10 +71,10 @@ export class LoginAssertions extends FluentComponentBase {
   }
 
   /**
-   * Kỳ vọng hiển thị lỗi "Required" cho password rỗng.
+   * Expects the "Required" error to be shown for an empty password.
    *
-   * Lưu ý: Ở OrangeHRM, thông báo Required dùng chung selector,
-   * nên test chỉ verify text, behaviour vẫn giống test cũ.
+   * Note: In OrangeHRM, the Required message uses a shared selector,
+   * so the test only verifies the text while keeping the same behaviour.
    */
   async expectPasswordRequiredError(): Promise<void> {
     Logger.step(3, 'Fluent: Verifying required validation for empty password');
@@ -84,7 +84,7 @@ export class LoginAssertions extends FluentComponentBase {
   }
 
   /**
-   * Ví dụ assertion kiểm tra đã authenticate sẵn (tương tự TC006).
+   * Example assertion for checking an already authenticated state (similar to TC006).
    */
   async expectOnDashboard(): Promise<void> {
     Logger.info('Fluent: Verifying authenticated dashboard URL');

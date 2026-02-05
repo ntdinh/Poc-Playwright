@@ -6,8 +6,8 @@ import { FluentLoginPage } from '../fluent/pages/FluentLoginPage';
 /**
  * Test Suite (Fluent): Login Functionality
  * ---------------------------------------
- * Clone từ `login.spec.ts` nhưng áp dụng Fluent Interface pattern
- * thông qua `FluentLoginPage`, `LoginFormComponent`, `LoginAssertions`.
+ * Cloned from `login.spec.ts` but using the Fluent Interface pattern
+ * through `FluentLoginPage`, `LoginFormComponent`, and `LoginAssertions`.
  */
 test.describe('Login Tests (Fluent)', () => {
   /**

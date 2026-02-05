@@ -6,9 +6,9 @@ type Step = () => Promise<void>;
 /**
  * LoginFormComponent (Fluent)
  * ---------------------------
- * Đại diện cho form login ở dạng Fluent Interface.
- * Thay vì gọi hành động ngay lập tức, các bước sẽ được "xếp hàng"
- * và thực thi tuần tự khi gọi `submit()`.
+ * Represents the login form using the Fluent Interface pattern.
+ * Instead of executing actions immediately, steps are queued
+ * and executed sequentially when `submit()` is called.
  */
 export class LoginFormComponent extends FluentComponentBase {
   private readonly loginPage: LoginPage;
@@ -20,7 +20,7 @@ export class LoginFormComponent extends FluentComponentBase {
   }
 
   /**
-   * Thiết lập username cho lần submit.
+   * Sets the username for the current submit.
    */
   withUsername(username: string): this {
     this.steps.push(() => this.loginPage.enterUsername(username));
@@ -28,7 +28,7 @@ export class LoginFormComponent extends FluentComponentBase {
   }
 
   /**
-   * Thiết lập password cho lần submit.
+   * Sets the password for the current submit.
    */
   withPassword(password: string): this {
     this.steps.push(() => this.loginPage.enterPassword(password));
@@ -36,8 +36,8 @@ export class LoginFormComponent extends FluentComponentBase {
   }
 
   /**
-   * Click nút "Forgot password".
-   * Vẫn là style fluent nên trả về chính component.
+   * Clicks the "Forgot password" button.
+   * Still uses fluent style, so returns this component.
    */
   clickForgotPassword(): this {
     this.steps.push(() => this.loginPage.clickForgotPassword());
@@ -45,8 +45,8 @@ export class LoginFormComponent extends FluentComponentBase {
   }
 
   /**
-   * Thực thi toàn bộ steps đã "build".
-   * Chỉ thực hiện việc nhập liệu, không submit form.
+   * Executes all queued steps.
+   * Only performs data entry, does not submit the form.
    */
   async perform(): Promise<void> {
     for (const step of this.steps) {
@@ -55,8 +55,8 @@ export class LoginFormComponent extends FluentComponentBase {
   }
 
   /**
-   * Submit form login bằng cách click nút Login.
-   * Nên gọi sau khi đã nhập xong username/password.
+   * Submits the login form by clicking the Login button.
+   * Should be called after username/password have been entered.
    */
   async submit(): Promise<void> {
     await this.perform();

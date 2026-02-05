@@ -9,9 +9,9 @@ import { TestData } from '../../utils/TestData';
 /**
  * FluentLoginPage
  * ---------------
- * Entry point chính cho Fluent Interface liên quan tới login.
+ * Main entry point for the Fluent Interface related to login.
  *
- * Ví dụ sử dụng:
+ * Example usage:
  *
  * const fluentLogin = await FluentLoginPage.start(page);
  *
@@ -31,7 +31,7 @@ export class FluentLoginPage extends FluentComponentBase {
   }
 
   /**
-   * Khởi tạo FluentLoginPage và điều hướng tới trang login.
+   * Initializes `FluentLoginPage` and navigates to the login page.
    */
   static async start(page: Page): Promise<FluentLoginPage> {
     const loginPage = new LoginPage(page);
@@ -42,27 +42,27 @@ export class FluentLoginPage extends FluentComponentBase {
   }
 
   /**
-   * Trả về fluent component đại diện cho form login.
-   * Component này chịu trách nhiệm build các bước nhập liệu.
+   * Returns the fluent component representing the login form.
+   * This component is responsible for building the data entry steps.
    */
   form(): LoginFormComponent {
     return new LoginFormComponent(this.loginPage);
   }
 
   /**
-   * Trả về fluent component chuyên xử lý assert sau login.
-   * Có thể dùng trực tiếp cho các scenario như đã authenticated sẵn.
+   * Returns the fluent component responsible for assertions after login.
+   * Can be used directly for scenarios where the user is already authenticated.
    */
   assertions(): LoginAssertions {
     return new LoginAssertions(this.loginPage);
   }
 
   /**
-   * Hỗ trợ scenario dùng authenticatedPage fixture (TC006).
+   * Supports scenarios that use the `authenticatedPage` fixture (TC006).
    */
   static async fromAuthenticatedPage(page: Page): Promise<FluentLoginPage> {
     Logger.info('Fluent: Using existing authenticated page');
-    // Ở đây giả định fixture đã login xong và đang ở dashboard.
+    // Assumes the fixture has already logged in and is on the dashboard.
     const loginPage = new LoginPage(page);
     return new FluentLoginPage(page, loginPage);
   }

@@ -7,15 +7,15 @@ export interface MockResponseOptions {
   headers?: Record<string, string>;
   delayMs?: number;
   /**
-   * Optional callback để đọc request (ví dụ lưu payload) trước khi fulfill.
+   * Optional callback to inspect the request (for example, to store the payload) before fulfilling it.
    */
   onRequest?: (request: Request) => void | Promise<void>;
 }
 
 /**
- * mockApiRoute - Helper generic để mock một API endpoint.
+ * mockApiRoute - Generic helper to mock an API endpoint.
  *
- * Ví dụ:
+ * Example:
  * await mockApiRoute(page, /\\/login$/, { status: 500, body: { message: 'Internal Error' } });
  */
 export async function mockApiRoute(

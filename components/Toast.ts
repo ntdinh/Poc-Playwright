@@ -2,7 +2,7 @@ import { Locator, Page, expect } from '@playwright/test';
 import { BaseComponent } from './BaseComponent';
 
 /**
- * Toast/Notification Component - ví dụ cho message tạm thời.
+ * Toast/Notification Component - example of a temporary message component.
  */
 export class Toast extends BaseComponent {
   constructor(page: Page, rootLocator: Locator) {

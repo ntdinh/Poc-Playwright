@@ -42,7 +42,7 @@ project-root/
 │   ├── TestData.ts        # Test data (username/password, URLs, messages, My Info data, ...)
 │   ├── Logger.ts          # Logger for tests (info/debug/warn/error, step)
 │   ├── api/
-│   │   └── APIHelper.ts   # Hỗ trợ gọi API (login, get/post/put/delete, auth headers)
+│   │   └── APIHelper.ts   # Helper for calling APIs (login, get/post/put/delete, auth headers)
 │   └── index.ts
 ├── tests/                 # Test suites
 │   ├── login.spec.ts              # Login test suite (POM)
@@ -76,7 +76,7 @@ project-root/
   - `usernameInput`, `passwordInput`, `loginButton`
   - `errorMessage` (flexible selector for OrangeHRM)
   - `requiredFieldMessage` (text "Required")
-- Methods chính:
+- Main methods:
   - `navigateToLogin()` – navigate to login page `https://opensource-demo.orangehrmlive.com`
   - `login(username, password)` – perform full login
   - `getErrorMessage()` – get error content, with fallback selector and logging

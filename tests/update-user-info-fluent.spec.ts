@@ -6,8 +6,8 @@ import { FluentMyInfoPage } from '../fluent/pages/FluentMyInfoPage';
 /**
  * Test Suite (Fluent): Update User Information
  * -------------------------------------------
- * Clone từ `update-user-info.spec.ts` nhưng áp dụng Fluent Interface pattern
- * thông qua `FluentMyInfoPage`, `MyInfoFormComponent`, `MyInfoAssertions`.
+ * Cloned from `update-user-info.spec.ts` but using the Fluent Interface pattern
+ * through `FluentMyInfoPage`, `MyInfoFormComponent`, and `MyInfoAssertions`.
  */
 test.describe('Update User Information Tests (Fluent)', () => {
   /**

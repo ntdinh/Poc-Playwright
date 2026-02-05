@@ -2,7 +2,7 @@ import { Locator, Page, expect } from '@playwright/test';
 import { BaseComponent } from './BaseComponent';
 
 /**
- * Modal Component - ví dụ cho component dialog.
+ * Modal Component - example of a dialog component.
  */
 export class Modal extends BaseComponent {
   constructor(page: Page, rootLocator: Locator) {

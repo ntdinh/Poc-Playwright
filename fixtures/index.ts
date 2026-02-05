@@ -61,7 +61,7 @@ export const test = base.extend<TestFixtures>({
 
   /**
    * Fixture: adminPage
-   * Tương tự authenticatedPage nhưng rõ nghĩa là role admin.
+   * Similar to `authenticatedPage` but explicitly for the admin role.
    */
   adminPage: async ({ page, loginPage }, use) => {
     const credentials = getCredentials('admin');
@@ -76,7 +76,7 @@ export const test = base.extend<TestFixtures>({
 
   /**
    * Fixture: userPage
-   * Đăng nhập với role user (non-admin).
+   * Logs in with the user role (non-admin).
    */
   userPage: async ({ page, loginPage }, use) => {
     const credentials = getCredentials('user');
