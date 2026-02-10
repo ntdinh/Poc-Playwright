@@ -35,3 +35,8 @@ coverage/
 # Build
 dist/
 build/
+
+# AI Validator
+ai-validator-artifacts/
+ai-validator-backups/
+ai-validator-results/

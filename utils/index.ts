@@ -7,3 +7,4 @@ export { Logger } from './Logger';
 export { APIHelper } from './api/APIHelper';
 export { mockApiRoute, NetworkMock, MockScenarios, type MockResponseOptions } from './NetworkMock';
 export { Accessibility } from './Accessibility';
+export * from './agent';

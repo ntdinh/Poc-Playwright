@@ -5,8 +5,10 @@ import { getBaseURL, getEnvironment } from './config/environment';
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// import dotenv from 'dotenv';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+import dotenv from 'dotenv';
+
+// Load .env file from project root
+dotenv.config();
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -44,6 +46,9 @@ export default defineConfig({
     actionTimeout: 10000,
     /* Timeout for navigation */
     navigationTimeout: 30000,
+    /* Bypass automation detection for some sites */
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    ignoreHTTPSErrors: true,
   },
   /* Global timeout for each test */
   timeout: 60000,
@@ -79,12 +84,12 @@ export default defineConfig({
     //   },
     // },
 
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
-    },
+    // {
+    //   name: 'webkit',
+    //   use: {
+    //     ...devices['Desktop Safari'],
+    //   },
+    // },
 
     // Mobile Browsers - uncomment to enable when needed
     // {

@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Playwright automation testing project with Page Object Model pattern",
   "main": "index.js",
+  "type": "module",
+  "bin": {
+    "playwright-ai-validator": "./bin/playwright-ai-validator.js"
+  },
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
@@ -20,19 +24,39 @@
     "test:regression": "playwright test --grep @regression",
     "test:api": "playwright test --grep @api",
     "test:a11y": "playwright test --grep @a11y",
-    "test:demo": "playwright test --grep @demo"
+    "test:demo": "playwright test --grep @demo",
+    "validate:test": "node --loader ts-node/esm src/cli.ts",
+    "validate:test:build": "tsc && node dist/cli.js"
   },
   "keywords": [
     "playwright",
     "automation",
     "testing",
-    "pom"
+    "pom",
+    "ai-validator",
+    "llm"
   ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.40.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.0"
+    "ai": "^6.0.78",
+    "dotenv": "^17.2.4",
+    "typescript": "^5.3.0",
+    "zod": "^4.3.6"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "fs-extra": "^11.2.0",
+    "ora": "^6.3.1",
+    "ts-node": "^10.9.2",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0"
   }
 }
