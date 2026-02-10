@@ -4,7 +4,7 @@
  * Learns reusable patterns from recorded traces using LLM.
  * Combines multiple traces to find common patterns and create generalized templates.
  */
-
+import { v4 as uuidv4 } from 'uuid';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { RecordedTrace } from '../recording/RecordedAction';
 import { SemanticExtractor, SemanticExtractionResult } from './SemanticExtractor';
