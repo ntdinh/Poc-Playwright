@@ -130,24 +130,42 @@ export class TestAgent {
         }
 
         // POC: Simple no-data detection AND auto-fix
+        // Thực hiện kiểm tra nếu page hiện trạng "no data" và tự động tăng time range nếu cần thiết, tự động xử lí và ko cần LLM
         const hasNoData = this.detectNoData(state);
         if (hasNoData && this.iteration > 3) { // Only after initial setup
           this.noDataAttempts++;
+
+          // Calculate next time range value
+          const previousTimeRange = this.currentTimeRange;
           const progression = [2, 4, 6, 12, 24, 36];
           const currentIndex = progression.indexOf(this.currentTimeRange);
+
           if (currentIndex >= 0 && currentIndex < progression.length - 1) {
             this.currentTimeRange = progression[currentIndex + 1];
           } else if (this.currentTimeRange < 60) {
             this.currentTimeRange = Math.min(this.currentTimeRange * 2, 60);
           }
 
-          Logger.info(`🔄 No data detected (attempt ${this.noDataAttempts}). Increasing time range to ${this.currentTimeRange} months`);
+          // Thực hiện change time nếu
+          // Detailed logging for auto-fix action
+          Logger.warn(`\n╔══════════════════════════════════════════════════════════════════╗`);
+          Logger.warn(`║           🤖 AUTO-FIX TRIGGERED: No Data Found                     ║`);
+          Logger.warn(`╠══════════════════════════════════════════════════════════════════╣`);
+          Logger.warn(`║  Attempt:          #${this.noDataAttempts}                                            ║`);
+          Logger.warn(`║  Previous range:   ${previousTimeRange} months                                           ║`);
+          Logger.warn(`║  New range:        ${this.currentTimeRange} months                                           ║`);
+          Logger.warn(`║  Progression:      ${progression.join(' → ')}                       ║`);
+          Logger.warn(`║  Action:           Auto-executing time range change               ║`);
+          Logger.warn(`║  Skipping:         LLM decision (using direct action)              ║`);
+          Logger.warn(`╚══════════════════════════════════════════════════════════════════╝\n`);
 
           // AUTO-EXECUTE: Directly change time range instead of asking LLM
           await this.changeTimeRange(this.currentTimeRange);
 
           // Wait for page to update after time range change
+          Logger.info(`⏳ Waiting 3s for page to update with new time range...`);
           await this.page.waitForTimeout(3000);
+          Logger.info(`✅ Wait complete, proceeding to next iteration\n`);
 
           // Skip to next iteration (don't ask LLM for action)
           continue;
@@ -380,23 +398,45 @@ export class TestAgent {
   /**
    * POC: Simple no-data detection
    * Checks if current state indicates no data scenario
+   *
+   * Returns true if page shows "no data" indicators
    */
   private detectNoData(state: BrowserState): boolean {
     const noDataKeywords = ['no results', 'no data found', 'no matches', '0 items', 'empty table', 'no data'];
 
-    // Check in page text (NEW - captures all visible text)
-    const hasKeywordInPage = state.pageText ? noDataKeywords.some(keyword =>
-      state.pageText!.includes(keyword)
-    ) : false;
+    // Check in page text (captures all visible text)
+    let foundKeywordInPage: string | null = null;
+    const hasKeywordInPage = state.pageText ? noDataKeywords.some(keyword => {
+      if (state.pageText!.toLowerCase().includes(keyword)) {
+        foundKeywordInPage = keyword;
+        return true;
+      }
+      return false;
+    }) : false;
 
     // Also check in DOM elements (for buttons/labels)
+    let foundKeywordInDom: string | null = null;
     const domText = state.domTree.map(el => (el.text || '') + ' ' + (el.accessibleName || '')).join(' ').toLowerCase();
-    const hasKeywordInDom = noDataKeywords.some(keyword => domText.includes(keyword));
+    const hasKeywordInDom = noDataKeywords.some(keyword => {
+      if (domText.includes(keyword)) {
+        foundKeywordInDom = keyword;
+        return true;
+      }
+      return false;
+    });
 
     const hasKeyword = hasKeywordInPage || hasKeywordInDom;
 
     if (hasKeyword) {
-      Logger.debug(`✅ No data detected via keywords!`);
+      // Detailed logging for no-data detection
+      const source = hasKeywordInPage ? 'PAGE_TEXT' : 'DOM_ELEMENTS';
+      const foundKey = foundKeywordInPage || foundKeywordInDom;
+
+      Logger.warn(`⚠️  NO DATA DETECTED!`);
+      Logger.warn(`   Source: ${source}`);
+      Logger.warn(`   Keyword found: "${foundKey}"`);
+      Logger.warn(`   Current time range: ${this.currentTimeRange} months`);
+      Logger.warn(`   Will trigger auto-fix (increase time range)`);
     }
 
     return hasKeyword;
@@ -405,53 +445,574 @@ export class TestAgent {
   /**
    * Directly change time range on OpenSearch Discover page
    * Auto-executed when no data is detected
+   *
+   * @param months - Time range in months to set
    */
-  private async changeTimeRange(months: number): Promise<void> {
-    try {
-      Logger.info(`⚡ Auto-executing time range change to ${months} months`);
+  async changeTimeRange(months: number): Promise<void> {
+    const stepPrefix = `      🕐`;
 
-      // 1. Click Date quick select button
+    Logger.info(`\n${stepPrefix} ┌─────────────────────────────────────────────────────────┐`);
+    Logger.info(`${stepPrefix} │  AUTO-FIX: Changing Time Range to ${months} months` + ' '.repeat(Math.max(0, 24 - String(months).length)) + `│`);
+    Logger.info(`${stepPrefix} ├─────────────────────────────────────────────────────────┤`);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    try {
+      // Step 1: Click Date quick select button
+      Logger.info(`${stepPrefix} │  Step 1/4: Opening date picker...`);
       try {
         await this.page.getByRole('button', { name: 'Date quick select' }).click({ timeout: 5000 });
-        Logger.info(`  ✓ Opened date picker`);
+        Logger.info(`${stepPrefix} │           ✅ SUCCESS - Date picker opened`);
+        successCount++;
       } catch (e) {
-        Logger.warn(`  ✗ Could not open date picker (might already be open): ${e}`);
+        Logger.warn(`${stepPrefix} │           ⚠️  SKIPPED - Picker might already be open`);
+        failCount++;
       }
 
-      // 2. Fill time value
+      // Step 2: Fill time value
+      Logger.info(`${stepPrefix} │  Step 2/4: Setting time value to "${months}"...`);
       try {
         await this.page.getByRole('spinbutton', { name: 'Time value' }).fill(String(months), { timeout: 5000 });
-        Logger.info(`  ✓ Set time value to ${months}`);
+        Logger.info(`${stepPrefix} │           ✅ SUCCESS - Time value set to ${months}`);
+        successCount++;
       } catch (e) {
-        Logger.warn(`  ✗ Could not set time value: ${e}`);
+        Logger.error(`${stepPrefix} │           ❌ FAILED - Could not set time value: ${e}`);
+        failCount++;
+        throw e; // Critical failure - can't continue
       }
 
-      // 3. Select months unit
+      // Step 3: Select months unit
+      Logger.info(`${stepPrefix} │  Step 3/4: Selecting "months" as time unit...`);
       try {
         await this.page.getByLabel('Time unit').selectOption('months', { timeout: 5000 });
-        Logger.info(`  ✓ Selected months as unit`);
+        Logger.info(`${stepPrefix} │           ✅ SUCCESS - Time unit set to months`);
+        successCount++;
       } catch (e) {
-        Logger.warn(`  ✗ Could not select months: ${e}`);
+        Logger.warn(`${stepPrefix} │           ⚠️  WARNING - Could not select months: ${e}`);
+        failCount++;
       }
 
-      // 4. Click Apply
+      // Step 4: Click Apply
+      Logger.info(`${stepPrefix} │  Step 4/4: Applying time range...`);
       try {
         await this.page.getByRole('button', { name: 'Apply' }).click({ timeout: 5000 });
-        Logger.info(`  ✓ Applied time range`);
+        Logger.info(`${stepPrefix} │           ✅ SUCCESS - Time range applied`);
+        successCount++;
       } catch (e) {
-        Logger.warn(`  ✗ Could not click Apply: ${e}`);
+        Logger.error(`${stepPrefix} │           ❌ FAILED - Could not click Apply: ${e}`);
+        failCount++;
+        throw e; // Critical failure - changes won't take effect
       }
+
+      // Summary
+      Logger.info(`${stepPrefix} ├─────────────────────────────────────────────────────────┤`);
+      Logger.info(`${stepPrefix} │  Result: ${successCount}/${successCount + failCount} steps succeeded`);
+      Logger.info(`${stepPrefix} └─────────────────────────────────────────────────────────┘`);
+
+      // Track this action for the execution log
+      this.actions.push({
+        type: 'fill',
+        selector: 'role=spinbutton:name=Time value',
+        description: `Auto-changed time range to ${months} months (no data detected - attempt ${this.noDataAttempts})`,
+        value: String(months)
+      });
+
+      Logger.info(`${stepPrefix} ✅ Action tracked: Time range change to ${months} months`);
+
+    } catch (error) {
+      Logger.error(`${stepPrefix} └─────────────────────────────────────────────────────────┘`);
+      Logger.error(`${stepPrefix} ❌ AUTO-FIX FAILED: Could not change time range`);
+      Logger.error(`${stepPrefix}    Error: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Switch to a different OpenSearch index pattern
+   * Used for testing multiple data sources
+   *
+   * Workflow:
+   * 1. Close any open dropdowns for clean state
+   * 2. Click on current index button to open dropdown
+   * 3. Look for and click the new index name
+   * 4. Wait for page to load
+   *
+   * @param indexName - The name of the index/pattern to switch to
+   */
+  async switchIndex(indexName: string): Promise<boolean> {
+    const stepPrefix = `      🔄`;
+
+    Logger.info(`\n${stepPrefix} ┌─────────────────────────────────────────────────────────┐`);
+    Logger.info(`${stepPrefix} │  INDEX SWITCH: Changing to "${indexName}"` + ' '.repeat(Math.max(0, 30 - indexName.length)) + `│`);
+    Logger.info(`${stepPrefix} ├─────────────────────────────────────────────────────────┤`);
+
+    try {
+      // Step 1: Click on current index button to open dropdown
+      Logger.info(`${stepPrefix} │  Step 1/4: Opening index dropdown...`);
+
+      // Try multiple selectors for the index dropdown button
+      let dropdownOpened = false;
+
+      // PRE-STEP: Close any open dropdowns first for clean state
+      try {
+        await this.page.keyboard.press('Escape');
+        await this.page.waitForTimeout(300);
+      } catch { /* ignore */ }
+      await this.page.waitForTimeout(500);
+
+      // Method 1: Using data-test-subj attribute (most reliable)
+      try {
+        await this.page.locator('[data-test-subj="indexPatternSwitchLink"]').click({ timeout: 3000, force: true });
+        dropdownOpened = true;
+        Logger.info(`${stepPrefix} │           ✅ SUCCESS - Dropdown opened (data-test-subj)`);
+      } catch (e) {
+        Logger.warn(`${stepPrefix} │           ⚠️  data-test-subj not found, trying button...`);
+      }
+
+      // Method 2: Using button with class euiButtonEmpty
+      if (!dropdownOpened) {
+        try {
+          await this.page.locator('button.euiButtonEmpty').filter({ hasText: /opensearch_dashboards_sample_data/i }).first().click({ timeout: 3000, force: true });
+          dropdownOpened = true;
+          Logger.info(`${stepPrefix} │           ✅ SUCCESS - Dropdown opened (button.euiButtonEmpty)`);
+        } catch (e) {
+          Logger.warn(`${stepPrefix} │           ⚠️  button.euiButtonEmpty not found, trying role=button...`);
+        }
+      }
+
+      // Method 3: Fallback to role=button with regex
+      if (!dropdownOpened) {
+        try {
+          await this.page.getByRole('button', { name: /opensearch_dashboards_sample_data/i }).first().click({ timeout: 3000, force: true });
+          dropdownOpened = true;
+          Logger.info(`${stepPrefix} │           ✅ SUCCESS - Dropdown opened (role=button)`);
+        } catch (e) {
+          Logger.warn(`${stepPrefix} │           ⚠️  role=button not found, trying manual search...`);
+        }
+      }
+
+      // Method 4: Last resort - find button by text content
+      if (!dropdownOpened) {
+        try {
+          const buttons = await this.page.locator('button').all();
+          for (const button of buttons) {
+            try {
+              const text = await button.textContent();
+              if (text && text.toLowerCase().includes('opensearch_dashboards_sample_data')) {
+                await button.click({ force: true });
+                dropdownOpened = true;
+                Logger.info(`${stepPrefix} │           ✅ SUCCESS - Dropdown opened (manual search)`);
+                break;
+              }
+            } catch { /* continue */ }
+          }
+        } catch (e) {
+          Logger.error(`${stepPrefix} │           ❌ FAILED - Could not open dropdown: ${e}`);
+          return false;
+        }
+      }
+
+      // Wait for dropdown to appear
+      await this.page.waitForTimeout(1000);
+
+      // Step 2: Look for and click index with multiple strategies
+      Logger.info(`${stepPrefix} │  Step 2/4: Looking for "${indexName}" in dropdown...`);
+
+      let indexClicked = false;
+
+      // Strategy 1: getByText
+      try {
+        const element = this.page.getByText(indexName, { exact: false }).first();
+        if (await element.isVisible().catch(() => false)) {
+          await element.scrollIntoViewIfNeeded({ timeout: 2000 });
+          await this.page.waitForTimeout(300);
+          await element.click({ timeout: 5000, force: true });
+          indexClicked = true;
+          Logger.info(`${stepPrefix} │           ✅ SUCCESS - Clicked using getByText`);
+        }
+      } catch (e) {
+        Logger.debug(`${stepPrefix} │           ⚠️  getByText failed, trying filtered locator...`);
+      }
+
+      // Strategy 2: Filtered locator with more element types
+      if (!indexClicked) {
+        try {
+          const element = this.page.locator('button, [role="option"], li, div[role="menuitem"], span.euiContextMenuItem__text').filter({ hasText: indexName }).first();
+          await element.scrollIntoViewIfNeeded({ timeout: 2000 });
+          await this.page.waitForTimeout(300);
+          await element.click({ timeout: 5000, force: true });
+          indexClicked = true;
+          Logger.info(`${stepPrefix} │           ✅ SUCCESS - Clicked using filtered locator`);
+        } catch (e) {
+          Logger.debug(`${stepPrefix} │           ⚠️  Filtered locator failed, trying XPath...`);
+        }
+      }
+
+      // Strategy 3: XPath fallback
+      if (!indexClicked) {
+        try {
+          const xpaths = [
+            `//*[contains(text(), '${indexName}')]`,
+            `//li[contains(text(), '${indexName}')]`,
+            `//button[contains(text(), '${indexName}')]`,
+            `//span[contains(text(), '${indexName}')]`
+          ];
+
+          for (const xpath of xpaths) {
+            try {
+              const element = this.page.locator(`xpath=${xpath}`).first();
+              if (await element.isVisible().catch(() => false)) {
+                await element.scrollIntoViewIfNeeded({ timeout: 2000 });
+                await this.page.waitForTimeout(300);
+                await element.click({ timeout: 5000, force: true });
+                indexClicked = true;
+                Logger.info(`${stepPrefix} │           ✅ SUCCESS - Clicked using XPath`);
+                break;
+              }
+            } catch { /* try next xpath */ }
+          }
+        } catch (e) {
+          Logger.error(`${stepPrefix} │           ❌ FAILED - Could not click index: ${e}`);
+          // Try to close dropdown
+          try { await this.page.keyboard.press('Escape'); await this.page.waitForTimeout(300); } catch { /* ignore */ }
+          return false;
+        }
+      }
+
+      if (!indexClicked) {
+        Logger.error(`${stepPrefix} │           ❌ FAILED - Could not find or click "${indexName}"`);
+        try { await this.page.keyboard.press('Escape'); await this.page.waitForTimeout(300); } catch { /* ignore */ }
+        return false;
+      }
+
+      // Step 3: Wait for page to load after index switch
+      Logger.info(`${stepPrefix} │  Step 3/4: Waiting for page to load...`);
+      await this.page.waitForTimeout(3000);
+
+      // Verify URL
+      try {
+        await this.page.waitForURL(/\/discover/, { timeout: 5000 });
+        Logger.info(`${stepPrefix} │           ✅ URL verified`);
+      } catch {
+        Logger.debug(`${stepPrefix} │           ⚠️  URL verification timeout`);
+      }
+
+      Logger.info(`${stepPrefix} │  Step 4/4: Complete`);
+
+      Logger.info(`${stepPrefix} ├─────────────────────────────────────────────────────────┤`);
+      Logger.info(`${stepPrefix} │  Index switch complete: ${indexName}`);
+      Logger.info(`${stepPrefix} └─────────────────────────────────────────────────────────┘`);
 
       // Track this action
       this.actions.push({
         type: 'fill',
-        description: `Auto-changed time range to ${months} months (no data detected)`,
-        value: String(months)
+        description: `Switched index to "${indexName}"`,
+        value: indexName
       });
 
+      // Reset time range tracking for new index
+      this.currentTimeRange = 2;
+      this.noDataAttempts = 0;
+
+      return true;
+
     } catch (error) {
-      Logger.warn(`Auto time range change failed: ${error}`);
+      Logger.error(`${stepPrefix} └─────────────────────────────────────────────────────────┘`);
+      Logger.error(`${stepPrefix} ❌ INDEX SWITCH FAILED: ${error}`);
+
+      // Cleanup: Try to close any open dropdowns
+      try {
+        await this.page.keyboard.press('Escape');
+        await this.page.waitForTimeout(300);
+      } catch { /* ignore */ }
+
+      return false;
     }
+  }
+
+  /**
+   * Extract table data from current OpenSearch Discover page
+   *
+   * @returns Object with table headers, row count, and sample data
+   */
+  async extractTableData(): Promise<{
+    headers: string[];
+    rowCount: number;
+    sampleRows: string[][];
+    hasData: boolean;
+  }> {
+    Logger.info(`\n      📊 Extracting table data from current page...`);
+
+    // Wait for data to load
+    await this.page.waitForTimeout(2000);
+
+    // Find data table
+    const dataTable = this.page.locator('.kbnDocTable, [data-test-subj="docTable"], table.euiTable').first();
+    const tableVisible = await dataTable.isVisible().catch(() => false);
+
+    if (!tableVisible) {
+      Logger.warn(`      ⚠️  No data table found on page`);
+      return {
+        headers: [],
+        rowCount: 0,
+        sampleRows: [],
+        hasData: false
+      };
+    }
+
+    // Extract headers
+    const headers = await this.page.locator('th.euiTableHeaderCell, .kbnDocTable th, table thead th').allTextContents();
+    Logger.info(`      ✅ Found ${headers.length} columns: ${headers.slice(0, 3).join(', ')}${headers.length > 3 ? '...' : ''}`);
+
+    // Extract rows
+    const rows = this.page.locator('tr.euiTableRow, .kbnDocTable tbody tr, table tbody tr');
+    const rowCount = await rows.count();
+
+    if (rowCount === 0) {
+      Logger.warn(`      ⚠️  Table found but contains 0 rows`);
+      return {
+        headers,
+        rowCount: 0,
+        sampleRows: [],
+        hasData: false
+      };
+    }
+
+    // Extract sample data (up to 10 rows)
+    const sampleCount = Math.min(rowCount, 10);
+    const sampleRows: string[][] = [];
+
+    Logger.info(`      📄 Extracting ${sampleCount} sample rows from ${rowCount} total rows...`);
+
+    for (let i = 0; i < sampleCount; i++) {
+      const cells = await rows.nth(i).locator('td').allTextContents();
+      sampleRows.push(cells);
+    }
+
+    Logger.info(`      ✅ Extracted ${sampleCount} rows successfully`);
+
+    return {
+      headers,
+      rowCount,
+      sampleRows,
+      hasData: rowCount > 0
+    };
+  }
+
+  /**
+   * Save extracted data to Markdown file
+   *
+   * @param indexName - Name of the index/data source
+   * @param tableData - Extracted table data
+   * @param outputDir - Directory to save the file
+   */
+  async saveDataToMarkdown(
+    indexName: string,
+    tableData: {
+      headers: string[];
+      rowCount: number;
+      sampleRows: string[][];
+      hasData: boolean;
+    },
+    outputDir: string = './test-results/extracted-data'
+  ): Promise<string> {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `index-${indexName.replace(/[^a-zA-Z0-9-_]/g, '_')}-${timestamp}.md`;
+    const filepath = path.join(outputDir, filename);
+
+    // Ensure directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    // Build markdown content
+    const samples = tableData.sampleRows.slice(0, 10).map((row, i) => {
+      const rowPreview = row.map(cell => cell?.substring(0, 50) || '').join(' | ');
+      return `| ${i + 1} | ${rowPreview}${row.length > 3 ? ' | ...' : ''} |`;
+    }).join('\n');
+
+    const markdownContent = `# OpenSearch Data Extraction Report
+
+**Generated:** ${new Date().toISOString()}
+**Data Source:** ${indexName}
+
+---
+
+## 📊 Data Overview
+
+| Property | Value |
+|----------|-------|
+| **Data Source** | ${indexName} |
+| **Total Records** | ${tableData.rowCount} |
+| **Columns** | ${tableData.headers.length} |
+| **Has Data** | ${tableData.hasData ? 'Yes ✅' : 'No ❌'} |
+
+### Table Structure
+${tableData.headers.map((col, i) => `${i + 1}. \`${col}\``).join('\n')}
+
+---
+
+## 📄 Sample Data (First ${tableData.sampleRows.length} Records)
+
+| # | Data Preview |
+|---|-------------|
+${samples}
+
+---
+
+## 📋 Column Details
+
+| Column | Type |
+|--------|------|
+${tableData.headers.map(h => `| \`${h}\` | string |`).join('\n')}
+
+---
+
+## 📝 Metadata
+
+| Key | Value |
+|-----|-------|
+| Extraction Timestamp | ${new Date().toISOString()} |
+| Data Source (Index) | ${indexName} |
+| Total Row Count | ${tableData.rowCount} |
+| Column Count | ${tableData.headers.length} |
+| Sample Size | ${tableData.sampleRows.length} rows |
+| Extraction Agent | TestAgent with Auto-Fix |
+
+---
+
+*This report was automatically generated by the OpenSearch Test Agent*
+`;
+
+    // Write file
+    fs.writeFileSync(filepath, markdownContent, 'utf-8');
+
+    Logger.info(`\n      💾 Data saved to: ${filepath}`);
+    Logger.info(`      📊 Records: ${tableData.rowCount}`);
+    Logger.info(`      📁 Source: ${indexName}\n`);
+
+    return filepath;
+  }
+
+  /**
+   * Process multiple indices with auto-fix for each
+   * Switches between indices, extracts data, and saves results
+   *
+   * @param indices - Array of index names to process
+   * @param outputDir - Directory to save results
+   * @param maxAttemptsPerIndex - Max time range attempts per index
+   */
+  async processMultipleIndices(
+    indices: string[],
+    outputDir: string = './test-results/extracted-data',
+    maxAttemptsPerIndex: number = 5
+  ): Promise<{
+    processed: Array<{ index: string; success: boolean; records: number; filepath?: string }>;
+    totalRecords: number;
+    summary: string;
+  }> {
+    const results: Array<{ index: string; success: boolean; records: number; filepath?: string }> = [];
+    let totalRecords = 0;
+
+    Logger.info(`\n╔══════════════════════════════════════════════════════════════════╗`);
+    Logger.info(`║       🗂️ MULTI-INDEX PROCESSING STARTED                           ║`);
+    Logger.info(`║       Indices to process: ${indices.length}                             ║`);
+    Logger.info(`╚══════════════════════════════════════════════════════════════════╝\n`);
+
+    for (let i = 0; i < indices.length; i++) {
+      const indexName = indices[i];
+      Logger.info(`\n${'='.repeat(70)}`);
+      Logger.info(`  📂 INDEX ${i + 1}/${indices.length}: "${indexName}"`);
+      Logger.info(`${'='.repeat(70)}\n`);
+
+      // Step 1: Switch to index
+      const switchSuccess = await this.switchIndex(indexName);
+      if (!switchSuccess) {
+        Logger.warn(`  ⚠️  Failed to switch to index "${indexName}", skipping...`);
+        results.push({ index: indexName, success: false, records: 0 });
+        continue;
+      }
+
+      // Wait for page to load after index switch
+      await this.page.waitForTimeout(3000);
+
+      // Reset time range for new index
+      this.currentTimeRange = 2;
+      this.noDataAttempts = 0;
+
+      // Step 2: Extract data with auto-fix loop
+      let tableData: Awaited<ReturnType<typeof this.extractTableData>> | undefined;
+      let attempts = 0;
+
+      while (attempts < maxAttemptsPerIndex) {
+        attempts++;
+        Logger.info(`\n      🔍 Attempt ${attempts}/${maxAttemptsPerIndex} for index "${indexName}"`);
+
+        // Extract data from current page
+        tableData = await this.extractTableData();
+
+        if (tableData.hasData) {
+          Logger.info(`      ✅ DATA FOUND in index "${indexName}" with ${tableData.rowCount} records!`);
+          break;
+        }
+
+        // No data - try auto-fix
+        if (attempts > 1) { // Allow first attempt to fail
+          Logger.warn(`      ⚠️  No data in attempt ${attempts}, increasing time range...`);
+
+          const progression = [2, 4, 6, 12, 24, 36];
+          const currentIndex = progression.indexOf(this.currentTimeRange);
+
+          if (currentIndex >= 0 && currentIndex < progression.length - 1) {
+            this.currentTimeRange = progression[currentIndex + 1];
+          } else if (this.currentTimeRange < 60) {
+            this.currentTimeRange = Math.min(this.currentTimeRange * 2, 60);
+          }
+
+          await this.changeTimeRange(this.currentTimeRange);
+          await this.page.waitForTimeout(3000);
+        }
+      }
+
+      // Step 3: Save results
+      if (tableData && tableData.hasData) {
+        const filepath = await this.saveDataToMarkdown(indexName, tableData, outputDir);
+        results.push({
+          index: indexName,
+          success: true,
+          records: tableData.rowCount,
+          filepath
+        });
+        totalRecords += tableData.rowCount;
+      } else {
+        Logger.warn(`  ❌ No data found for "${indexName}" after ${maxAttemptsPerIndex} attempts`);
+        results.push({
+          index: indexName,
+          success: false,
+          records: 0
+        });
+      }
+    }
+
+    // Build summary
+    const successCount = results.filter(r => r.success).length;
+    const summary = `Processed ${indices.length} indices: ${successCount} successful, ${indices.length - successCount} failed. Total records: ${totalRecords}`;
+
+    Logger.info(`\n╔══════════════════════════════════════════════════════════════════╗`);
+    Logger.info(`║       ✅ MULTI-INDEX PROCESSING COMPLETE                         ║`);
+    Logger.info(`╠══════════════════════════════════════════════════════════════════╣`);
+    Logger.info(`║  Total indices:    ${indices.length}                                          ║`);
+    Logger.info(`║  Successful:       ${successCount}                                                ║`);
+    Logger.info(`║  Failed:          ${indices.length - successCount}                                                ║`);
+    Logger.info(`║  Total records:    ${totalRecords}                                              ║`);
+    Logger.info(`╚══════════════════════════════════════════════════════════════════╝\n`);
+
+    return {
+      processed: results,
+      totalRecords,
+      summary
+    };
   }
 
   /**

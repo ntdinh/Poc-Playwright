@@ -79,7 +79,7 @@ test.describe('Integration: Complete TC001 with 3-Phase Learning', () => {
       workflowName: 'TC001: OpenSearch Discover with Time Range',
       description: 'Complete TC001 workflow - Navigate to Discover, set time range to 2 months',
       goal: 'Navigate to Discover page, set time range to 2 months, verify Download CSV button',
-      startUrl: 'https://playground.opensearch.org/app/home',
+      // startUrl: 'https://playground.opensearch.org/app/home',
       outputDir: RECORDINGS_DIR,
       captureScreenshots: false, // Faster without screenshots
       captureDOM: false,
@@ -89,68 +89,63 @@ test.describe('Integration: Complete TC001 with 3-Phase Learning', () => {
     // start record action user
     await recorder.startRecording(recordingConfig);
 
-    // Execute TC001 workflow - simplified recording for demo purposes
-    await page.goto('https://playground.opensearch.org/app/home#/');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(3000);
-
     // Record simple navigation workflow
-    await recorder.recordAction('navigate', 'https://playground.opensearch.org/app/home#/', 'Navigate to OpenSearch home page', { url: 'https://playground.opensearch.org/app/home#/' });
+    // await recorder.recordAction('navigate', 'https://playground.opensearch.org/app/home#/', 'Navigate to OpenSearch home page', { url: 'https://playground.opensearch.org/app/home#/' });
 
     // Try to dismiss banner if visible
-    try {
-      const hasBanner = await page.getByRole('button', { name: 'Dismiss' }).isVisible().catch(() => false);
-      if (hasBanner) {
-        await page.getByRole('button', { name: 'Dismiss' }).click();
-        await recorder.recordAction('click', 'role=button:name=Dismiss', 'Dismiss welcome banner');
-        await page.waitForTimeout(500);
-      }
-    } catch { /* ignore */ }
+    // try {
+    //   const hasBanner = await page.getByRole('button', { name: 'Dismiss' }).isVisible().catch(() => false);
+    //   if (hasBanner) {
+    //     await page.getByRole('button', { name: 'Dismiss' }).click();
+    //     await recorder.recordAction('click', 'role=button:name=Dismiss', 'Dismiss welcome banner');
+    //     await page.waitForTimeout(500);
+    //   }
+    // } catch { /* ignore */ }
 
-    // Navigate to Discover page directly
-    await page.goto('https://playground.opensearch.org/app/discover#/');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
-    await recorder.recordAction('navigate', 'https://playground.opensearch.org/app/discover#/', 'Navigate to Discover page', { url: 'https://playground.opensearch.org/app/discover#/' });
+    // // Navigate to Discover page directly
+    // await page.goto('https://playground.opensearch.org/app/discover#/');
+    // await page.waitForLoadState('networkidle');
+    // await page.waitForTimeout(2000);
+    // await recorder.recordAction('navigate', 'https://playground.opensearch.org/app/discover#/', 'Navigate to Discover page', { url: 'https://playground.opensearch.org/app/discover#/' });
 
-    console.log('   ℹ️ Simple recording: Navigation to Discover page completed');
+    // console.log('   ℹ️ Simple recording: Navigation to Discover page completed');
 
-    const trace = await recorder.stopRecording();
-    await traceStorage.save(trace);
+    // const trace = await recorder.stopRecording();
+    // await traceStorage.save(trace);
 
-    // ========================================================================
-    // PHASE 2: LEARN
-    // ========================================================================
-    console.log('\n🧠 PHASE 2: LEARNING');
-    console.log('   Extracting patterns and creating reusable template...');
+    // // ========================================================================
+    // // PHASE 2: LEARN
+    // // ========================================================================
+    // console.log('\n🧠 PHASE 2: LEARNING');
+    // console.log('   Extracting patterns and creating reusable template...');
 
-    const learner = new PatternLearner({ geminiApiKey: API_KEY });
-    const learningResult = await learner.learnFromTrace(trace);
+    // const learner = new PatternLearner({ geminiApiKey: API_KEY });
+    // const learningResult = await learner.learnFromTrace(trace);
 
-    console.log(`   ✅ Extracted ${learningResult.template.steps.length} workflow steps`);
-    console.log(`   ✅ Confidence: ${(learningResult.confidence * 100).toFixed(1)}%`);
-    console.log(`   ✅ Identified ${learningResult.template.variables?.length || 0} variables`);
-    console.log(`   ✅ Duration: ${(learningResult.duration / 1000).toFixed(2)}s`);
+    // console.log(`   ✅ Extracted ${learningResult.template.steps.length} workflow steps`);
+    // console.log(`   ✅ Confidence: ${(learningResult.confidence * 100).toFixed(1)}%`);
+    // console.log(`   ✅ Identified ${learningResult.template.variables?.length || 0} variables`);
+    // console.log(`   ✅ Duration: ${(learningResult.duration / 1000).toFixed(2)}s`);
 
-    const templateStore = new TemplateStore({ baseDir: TEMPLATES_DIR });
-    await templateStore.save(learningResult.template);
+    // const templateStore = new TemplateStore({ baseDir: TEMPLATES_DIR });
+    // await templateStore.save(learningResult.template);
 
-    console.log(`   ✅ Template saved: ${learningResult.template.id}`);
-    console.log(`   ✅ Template name: ${learningResult.template.name}`);
+    // console.log(`   ✅ Template saved: ${learningResult.template.id}`);
+    // console.log(`   ✅ Template name: ${learningResult.template.name}`);
 
-    // Display template summary
-    console.log('\n   📋 Learned Template:');
-    learningResult.template.steps.forEach((step, i) => {
-      console.log(`      ${i + 1}. ${step.intent}`);
-    });
+    // // Display template summary
+    // console.log('\n   📋 Learned Template:');
+    // learningResult.template.steps.forEach((step, i) => {
+    //   console.log(`      ${i + 1}. ${step.intent}`);
+    // });
 
-    // Display extracted variables
-    if (learningResult.template.variables && learningResult.template.variables.length > 0) {
-      console.log('\n   🔧 Extracted Variables:');
-      learningResult.template.variables.forEach((v, i) => {
-        console.log(`      ${i + 1}. ${v.name}: ${v.description} (default: ${v.defaultValue || 'none'})`);
-      });
-    }
+    // // Display extracted variables
+    // if (learningResult.template.variables && learningResult.template.variables.length > 0) {
+    //   console.log('\n   🔧 Extracted Variables:');
+    //   learningResult.template.variables.forEach((v, i) => {
+    //     console.log(`      ${i + 1}. ${v.name}: ${v.description} (default: ${v.defaultValue || 'none'})`);
+    //   });
+    // }
 
     // ========================================================================
     // PHASE 3: EXECUTE (Using AI Agent)
@@ -201,252 +196,242 @@ test.describe('Integration: Complete TC001 with 3-Phase Learning', () => {
     // Wait for data table to load
     await page.waitForTimeout(2000);
 
-    // Find the data table in OpenSearch Discover page
-    const dataTable = page.locator('.kbnDocTable, [data-test-subj="docTable"], table.euiTable').first();
-    const tableVisible = await dataTable.isVisible().catch(() => false);
+    
+ 
 
-    if (!tableVisible) {
-      console.log('   ⚠️ Data table not found, trying alternative selectors...');
-      const anyTable = page.locator('table').first();
-      const anyTableVisible = await anyTable.isVisible().catch(() => false);
-      if (!anyTableVisible) {
-        console.log('   ℹ️ No table found - might be loading or no data available');
-        console.log('   ℹ️ Skipping data extraction');
-      } else {
-        console.log('   ✅ Found alternative data table');
+    // ========================================================================
+    // PHASE 5: MULTI-INDEX PROCESSING & CONSOLIDATION
+    // ========================================================================
+    console.log('\n🗂️ PHASE 5: MULTI-INDEX PROCESSING & CONSOLIDATION');
+    console.log('   Processing multiple OpenSearch indices and consolidating into single report...');
+
+    // Define indices to process
+    const indicesToProcess = [
+      'opensearch_dashboards_sample_data_ecommerce',
+      'opensearch_dashboards_sample_data_flights',
+      'opensearch_dashboards_sample_data_logs'
+    ];
+
+    console.log(`   📋 Indices to process: ${indicesToProcess.length}`);
+    indicesToProcess.forEach((idx, i) => {
+      console.log(`      ${i + 1}. ${idx}`);
+    });
+
+    // Storage for all consolidated data
+    const allIndexData: Array<{
+      indexName: string;
+      success: boolean;
+      rowCount: number;
+      columns: string[];
+      sampleRows: string[][];
+      error?: string;
+    }> = [];
+
+    // Process each index and extract data
+    for (let i = 0; i < indicesToProcess.length; i++) {
+      const indexName = indicesToProcess[i];
+      console.log(`\n${'='.repeat(70)}`);
+      console.log(`  📂 INDEX ${i + 1}/${indicesToProcess.length}: "${indexName}"`);
+      console.log(`${'='.repeat(70)}\n`);
+
+      // Step 1: Switch to index
+      const switchSuccess = await agent.switchIndex(indexName);
+      if (!switchSuccess) {
+        console.log(`  ⚠️  Failed to switch to "${indexName}", skipping...`);
+        allIndexData.push({
+          indexName,
+          success: false,
+          rowCount: 0,
+          columns: [],
+          sampleRows: [],
+          error: 'Failed to switch index'
+        });
+        continue;
       }
-    } else {
-      console.log('   ✅ Found OpenSearch data table');
+
+      // Wait 2s after index switch for data to load
+      console.log(`  ⏳ Waiting 2s for page to load after index switch...`);
+      await page.waitForTimeout(2000);
+
+      // Step 2: Extract data with auto-fix loop
+      let tableData: Awaited<ReturnType<typeof agent.extractTableData>> | undefined;
+      let attempts = 0;
+      const maxAttempts = 5;
+      const timeProgression = [2, 4, 6, 12, 24, 36];
+
+      while (attempts < maxAttempts) {
+        attempts++;
+        console.log(`  🔍 Attempt ${attempts}/${maxAttempts} for index "${indexName}"`);
+
+        // Extract data from current page
+        tableData = await agent.extractTableData();
+
+        if (tableData.hasData) {
+          console.log(`  ✅ DATA FOUND in index "${indexName}" with ${tableData.rowCount} records!`);
+          break;
+        }
+
+        // No data - try auto-fix by changing time range directly
+        console.log(`  ⚠️  No data in attempt ${attempts}, trying to change time range...`);
+
+        const nextTimeRange = attempts < timeProgression.length
+          ? timeProgression[attempts]
+          : Math.min((timeProgression[timeProgression.length - 1] || 36) * 2, 60);
+
+        // Use changeTimeRange method which handles all the internal state
+        await agent.changeTimeRange(nextTimeRange);
+
+        // Wait for data to load after time range change
+        console.log(`  ⏳ Waiting 3s for data to load after time range change...`);
+        await page.waitForTimeout(3000);
+      }
+
+      // Store result
+      if (tableData && tableData.hasData) {
+        allIndexData.push({
+          indexName,
+          success: true,
+          rowCount: tableData.rowCount,
+          columns: tableData.headers,
+          sampleRows: tableData.sampleRows
+        });
+      } else {
+        console.log(`  ❌ No data found for "${indexName}" after ${maxAttempts} attempts`);
+        allIndexData.push({
+          indexName,
+          success: false,
+          rowCount: 0,
+          columns: [],
+          sampleRows: [],
+          error: 'No data found'
+        });
+      }
     }
 
-    // Extract table headers
-    console.log('\n   📋 Extracting table structure...');
-    const headers = await page.locator('th.euiTableHeaderCell, .kbnDocTable th, table thead th').allTextContents();
-    console.log(`   ✅ Found ${headers.length} columns: ${headers.slice(0, 5).join(', ')}${headers.length > 5 ? '...' : ''}`);
+    // ========================================================================
+    // GENERATE CONSOLIDATED REPORT
+    // ========================================================================
+    console.log(`\n${'='.repeat(70)}`);
+    console.log('  📊 GENERATING CONSOLIDATED REPORT');
+    console.log(`${'='.repeat(70)}\n`);
 
-    // Extract first few rows of data
-    console.log('\n   📄 Extracting table rows...');
-    const rows = page.locator('tr.euiTableRow, .kbnDocTable tbody tr, table tbody tr');
-    const rowCount = await rows.count();
+    const timestamp = Date.now();
+    const outputDir = './test-results/analysis';
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
 
-    if (rowCount > 0) {
-      const sampleRows = Math.min(rowCount, 5);
-      const tableData: string[][] = [];
+    const markdownFilename = `multi-index-consolidated-${timestamp}.md`;
+    const markdownPath = path.join(outputDir, markdownFilename);
 
-      for (let i = 0; i < sampleRows; i++) {
-        const cells = await rows.nth(i).locator('td').allTextContents();
-        tableData.push(cells);
-      }
-
-      console.log(`   ✅ Extracted ${sampleRows} rows from ${rowCount} total rows`);
-
-      // Display sample data
-      console.log('\n   📋 Sample Data (first 3 rows):');
-      tableData.slice(0, 3).forEach((row, i) => {
-        const preview = row.slice(0, 3).map(cell => cell.substring(0, 30)).join(' | ');
-        console.log(`      Row ${i + 1}: ${preview}${row.length > 3 ? '...' : ''}`);
-      });
-
-      // ========================================================================
-      // ANALYZE DATA WITH LLM
-      // ========================================================================
-      console.log('\n🧠 ANALYZING DATA WITH AI');
-
-      const dataSummary = {
-        columns: headers,
-        rowCount: rowCount,
-        sampleRows: tableData.slice(0, 3),
-        timestamp: new Date().toISOString()
-      };
-
-      const analysisPrompt = `Analyze this OpenSearch Discover page data and provide insights:
-
-**Table Structure:**
-- Columns: ${headers.join(', ')}
-- Total Rows: ${rowCount}
-
-**Sample Data (first 3 rows):**
-${JSON.stringify(tableData.slice(0, 3), null, 2)}
-
-**Task:**
-1. What type of data is this? (logs, metrics, events, etc.)
-2. What is the main subject/topic of the data?
-3. What patterns do you notice?
-4. What are the key columns and their significance?
-5. Any anomalies or interesting observations?
-
-Provide a concise analysis in JSON format:
-{
-  "dataType": "type of data",
-  "topic": "main subject",
-  "patterns": ["pattern1", "pattern2"],
-  "keyColumns": [{"column": "name", "significance": "description"}],
-  "observations": ["observation1", "observation2"],
-  "summary": "brief summary of the data"
-}`;
-
-      try {
-        console.log('   🔍 Sending data to AI for analysis...');
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-        const result = await model.generateContent(analysisPrompt);
-        const analysisText = result.response.text();
-
-        let analysis;
-        try {
-          const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            analysis = JSON.parse(jsonMatch[0]);
-          } else {
-            throw new Error('No JSON found in response');
-          }
-        } catch {
-          analysis = {
-            summary: analysisText,
-            rawData: true
-          };
-        }
-
-        console.log('\n   ✅ AI Analysis Complete:');
-        console.log(`      📊 Data Type: ${analysis.dataType || 'Unknown'}`);
-        console.log(`      🎯 Topic: ${analysis.topic || 'Unknown'}`);
-
-        if (analysis.patterns && analysis.patterns.length > 0) {
-          console.log('\n      🔍 Patterns Detected:');
-          analysis.patterns.forEach((p: string, i: number) => {
-            console.log(`         ${i + 1}. ${p}`);
-          });
-        }
-
-        if (analysis.keyColumns && analysis.keyColumns.length > 0) {
-          console.log('\n      🔑 Key Columns:');
-          analysis.keyColumns.forEach((col: any) => {
-            console.log(`         • ${col.column}: ${col.significance}`);
-          });
-        }
-
-        if (analysis.observations && analysis.observations.length > 0) {
-          console.log('\n      💡 Observations:');
-          analysis.observations.forEach((obs: string, i: number) => {
-            console.log(`         ${i + 1}. ${obs}`);
-          });
-        }
-
-        console.log(`\n      📝 Summary: ${analysis.summary || 'No summary available'}`);
-
-        // Save analysis to files (both JSON and Markdown)
-        const analysisDir = './test-results/analysis';
-        if (!fs.existsSync(analysisDir)) {
-          fs.mkdirSync(analysisDir, { recursive: true });
-        }
-
-        const timestamp = Date.now();
-        const baseFilename = `opensearch-analysis-${timestamp}`;
-
-        // Save JSON file
-        const jsonFile = path.join(analysisDir, `${baseFilename}.json`);
-        fs.writeFileSync(jsonFile, JSON.stringify({
-          timestamp: new Date().toISOString(),
-          dataSummary,
-          analysis
-        }, null, 2));
-
-        // Generate Markdown file
-        const mdFile = path.join(analysisDir, `${baseFilename}.md`);
-        const markdownContent = `# OpenSearch Data Analysis Report
+    // Build consolidated markdown report
+    let markdownContent = `# OpenSearch Multi-Index Data Report
 
 **Generated:** ${new Date().toISOString()}
-**Source:** OpenSearch Discover Page
+**Source:** OpenSearch Dashboard - Multiple Indices Processing
 
 ---
 
-## 📊 Data Overview
+## 📊 Summary
 
-| Property | Value |
-|----------|-------|
-| **Data Type** | ${analysis.dataType || 'Unknown'} |
-| **Topic** | ${analysis.topic || 'Unknown'} |
-| **Total Rows** | ${dataSummary.rowCount} |
-| **Columns** | ${dataSummary.columns.length} |
-
-### Table Structure
-${dataSummary.columns.map((col: string, i: number) => `${i + 1}. \`${col}\``).join('\n')}
+| Metric | Value |
+|---------|-------|
+| **Total Indices Processed** | ${indicesToProcess.length} |
+| **Successful** | ${allIndexData.filter(d => d.success).length} |
+| **Failed** | ${allIndexData.filter(d => !d.success).length} |
+| **Total Records Extracted** | ${allIndexData.reduce((sum, d) => sum + (d.success ? d.rowCount : 0), 0)} |
 
 ---
 
-## 🔍 Patterns Detected
+## 📋 Per-Index Results
 
-${analysis.patterns && analysis.patterns.length > 0 ?
-  analysis.patterns.map((p: string, i: number) => `${i + 1}. ${p}`).join('\n') :
-  '*No patterns detected*'}
+`;
 
----
+    // Add each index section
+    allIndexData.forEach((data, i) => {
+      const status = data.success ? '✅ SUCCESS' : '❌ FAILED';
+      markdownContent += `### ${i + 1}. ${data.indexName} - ${status}
 
-## 🔑 Key Columns
+`;
 
-${analysis.keyColumns && analysis.keyColumns.length > 0 ?
-  analysis.keyColumns.map((col: any) =>
-    `**\`${col.column}\`**: ${col.significance}`
-  ).join('\n') :
-  '*No key columns identified*'}
+      if (data.success) {
+        markdownContent += `- **Records:** ${data.rowCount}
+- **Columns:** ${data.columns.length}
+`;
 
----
+        // Show column names
+        data.columns.forEach((col, j) => {
+          markdownContent += `  ${j + 1}. \`${col}\`\n`;
+        });
 
-## 💡 Observations
+        // Add sample data
+        markdownContent += `
+#### Sample Data (first 5 rows)
 
-${analysis.observations && analysis.observations.length > 0 ?
-  analysis.observations.map((obs: string, i: number) => `${i + 1}. ${obs}`).join('\n') :
-  '*No observations recorded*'}
+| Row | ${data.columns.slice(0, 3).join(' | ')}${data.columns.length > 3 ? ' | ...' : ''} |
+|-----|${'---|'.repeat(data.columns.length > 3 ? data.columns.length : 3)}-----|
+`;
 
----
+        data.sampleRows.slice(0, 5).forEach((row, ri) => {
+          const rowPreview = row.slice(0, 3).map(cell => cell?.substring(0, 40) || '').join(' | ');
+          markdownContent += `| ${ri + 1} | ${rowPreview}${row.length > 3 ? ' | ...' : ''} |\n`;
+        });
 
-## 📝 Summary
+        markdownContent += `\n`;
+      } else {
+        markdownContent += `- **Error:** ${data.error || 'Unknown error'}
+`;
+      }
 
-${analysis.summary || 'No summary available.'}
+      markdownContent += `\n`;
+    });
 
----
-
-## 📄 Sample Data (First 3 Rows)
-
-\`\`\`
-${dataSummary.sampleRows.map((row: string[], i: number) =>
-  `Row ${i + 1}: ${row.slice(0, 3).map(cell => cell.substring(0, 50)).join(' | ')}`
-).join('\n')}
-\`\`\`
-
+    // Add footer
+    markdownContent += `
 ---
 
 ## 📋 Metadata
 
 | Key | Value |
 |-----|-------|
-| Analysis Timestamp | ${new Date().toISOString()} |
-| Data Source | OpenSearch Discover Page |
-| Row Count | ${dataSummary.rowCount} |
-| Column Count | ${dataSummary.columns.length} |
-| Sample Size | ${dataSummary.sampleRows.length} rows |
+| Report Timestamp | ${new Date().toISOString()} |
+| Total Indices | ${indicesToProcess.length} |
+| Successful Indices | ${allIndexData.filter(d => d.success).length} |
+| Failed Indices | ${allIndexData.filter(d => !d.success).length} |
+| Total Records | ${allIndexData.reduce((sum, d) => sum + (d.success ? d.rowCount : 0), 0)} |
+| Report Generated By | 4-Phase Learning System with AI Agent |
 
 ---
 
-*This report was automatically generated by the 4-Phase Learning System*
+*This report was automatically generated by processing multiple OpenSearch indices with auto-fix and consolidation*
 `;
 
-        fs.writeFileSync(mdFile, markdownContent, 'utf-8');
+    // Save consolidated report
+    fs.writeFileSync(markdownPath, markdownContent, 'utf-8');
 
-        console.log(`\n   💾 Analysis saved to:`);
-        console.log(`      📄 JSON: ${jsonFile}`);
-        console.log(`      📝 Markdown: ${mdFile}`);
+    console.log(`\n💾 Consolidated report saved to:`);
+    console.log(`   📝 ${markdownPath}`);
 
-      } catch (error) {
-        console.log(`   ⚠️ AI Analysis failed: ${error}`);
-        console.log('   ℹ️ Data extraction completed, but AI analysis skipped');
-      }
-    } else {
-      console.log('   ⚠️ No data rows found in table');
-      console.log('   ℹ️ The table might be empty or still loading');
-    }
+    // Display summary in console
+    console.log(`\n${'='.repeat(70)}`);
+    console.log('  📊 MULTI-INDEX PROCESSING COMPLETE');
+    console.log(`${'='.repeat(70)}\n`);
 
-    console.log('\n   ✅ Data extraction and analysis phase complete');
+    console.log('   📊 Summary:');
+    console.log(`   ├─ Total indices processed: ${indicesToProcess.length}`);
+    console.log(`   ├─ Successful: ${allIndexData.filter(d => d.success).length}`);
+    console.log(`   ├─ Failed: ${allIndexData.filter(d => !d.success).length}`);
+    console.log(`   └─ Total records extracted: ${allIndexData.reduce((sum, d) => sum + (d.success ? d.rowCount : 0), 0)}`);
+
+    console.log('\n   📋 Detailed Results:');
+    allIndexData.forEach((data, i) => {
+      const status = data.success ? '✅' : '❌';
+      const records = data.success ? `${data.rowCount} records` : 'No data';
+      console.log(`      ${i + 1}. [${status}] ${data.indexName}`);
+      console.log(`         Records: ${records}`);
+    });
+
+    console.log(`\n   ✅ Multi-index consolidation complete: ${allIndexData.reduce((sum, d) => sum + (d.success ? d.rowCount : 0), 0)} records from ${allIndexData.filter(d => d.success).length} indices`);
 
     // Show performance
     const perf = agent.getPerformanceMonitor().getSummary();
@@ -462,14 +447,16 @@ ${dataSummary.sampleRows.map((row: string[], i: number) =>
     }
 
     console.log('\n╔══════════════════════════════════════════════════════════════════╗');
-    console.log('║     ✅ TC001 4-PHASE WORKFLOW COMPLETE                          ║');
+    console.log('║     ✅ TC001 5-PHASE WORKFLOW COMPLETE                          ║');
     console.log('╚══════════════════════════════════════════════════════════════════╝');
 
     // Summary statistics
-    console.log('\n📊 Summary:');
-    console.log(`   • Recording: ${trace.actions.length} actions captured`);
-    console.log(`   • Learning: ${learningResult.template.steps.length} steps, ${(learningResult.confidence * 100).toFixed(0)}% confidence`);
-    console.log(`   • Execution: AI Agent achieved goal in ${result.iterations || 'N/A'} iterations`);
-    console.log(`   • Total time: ${((trace.duration + learningResult.duration + result.executionTime) / 1000).toFixed(2)}s`);
+    // console.log('\n📊 Summary:');
+    // console.log(`   Phase 1 • Recording: ${trace.actions.length} actions captured`);
+    // console.log(`   Phase 2 • Learning: ${learningResult.template.steps.length} steps, ${(learningResult.confidence * 100).toFixed(0)}% confidence`);
+    // console.log(`   Phase 3 • Execution: AI Agent achieved goal in ${result.iterations || 'N/A'} iterations`);
+    // console.log(`   Phase 4 • Analysis: Data table extracted and analyzed`);
+    // console.log(`   Phase 5 • Multi-Index: ${multiIndexResult.totalRecords} records from ${indicesToProcess.length} indices`);
+    // console.log(`   • Total time: ${((trace.duration + learningResult.duration + result.executionTime) / 1000).toFixed(2)}s`);
   });
 });
