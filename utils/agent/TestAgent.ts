@@ -970,6 +970,17 @@ ${tableData.headers.map(h => `| \`${h}\` | string |`).join('\n')}
             this.currentTimeRange = Math.min(this.currentTimeRange * 2, 60);
           }
 
+
+          Logger.warn(`\n╔══════════════════════════════════════════════════════════════════╗`);
+          Logger.warn(`║           🤖 AUTO-FIX TRIGGERED: No Data Found                     ║`);
+          Logger.warn(`╠══════════════════════════════════════════════════════════════════╣`);
+          Logger.warn(`║  Attempt:          #${this.noDataAttempts}                         ║`);
+          Logger.warn(`║  New range:        ${this.currentTimeRange} months                  ║`);
+          Logger.warn(`║  Progression:      ${progression.join(' → ')}                       ║`);
+          Logger.warn(`║  Action:           Auto-executing time range change               ║`);
+          Logger.warn(`║  Skipping:         LLM decision (using direct action)              ║`);
+          Logger.warn(`╚══════════════════════════════════════════════════════════════════╝\n`);
+          
           await this.changeTimeRange(this.currentTimeRange);
           await this.page.waitForTimeout(3000);
         }

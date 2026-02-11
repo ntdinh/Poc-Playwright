@@ -89,69 +89,6 @@ test.describe('Integration: Complete TC001 with 3-Phase Learning', () => {
     // start record action user
     await recorder.startRecording(recordingConfig);
 
-    // Record simple navigation workflow
-    // await recorder.recordAction('navigate', 'https://playground.opensearch.org/app/home#/', 'Navigate to OpenSearch home page', { url: 'https://playground.opensearch.org/app/home#/' });
-
-    // Try to dismiss banner if visible
-    // try {
-    //   const hasBanner = await page.getByRole('button', { name: 'Dismiss' }).isVisible().catch(() => false);
-    //   if (hasBanner) {
-    //     await page.getByRole('button', { name: 'Dismiss' }).click();
-    //     await recorder.recordAction('click', 'role=button:name=Dismiss', 'Dismiss welcome banner');
-    //     await page.waitForTimeout(500);
-    //   }
-    // } catch { /* ignore */ }
-
-    // // Navigate to Discover page directly
-    // await page.goto('https://playground.opensearch.org/app/discover#/');
-    // await page.waitForLoadState('networkidle');
-    // await page.waitForTimeout(2000);
-    // await recorder.recordAction('navigate', 'https://playground.opensearch.org/app/discover#/', 'Navigate to Discover page', { url: 'https://playground.opensearch.org/app/discover#/' });
-
-    // console.log('   ℹ️ Simple recording: Navigation to Discover page completed');
-
-    // const trace = await recorder.stopRecording();
-    // await traceStorage.save(trace);
-
-    // // ========================================================================
-    // // PHASE 2: LEARN
-    // // ========================================================================
-    // console.log('\n🧠 PHASE 2: LEARNING');
-    // console.log('   Extracting patterns and creating reusable template...');
-
-    // const learner = new PatternLearner({ geminiApiKey: API_KEY });
-    // const learningResult = await learner.learnFromTrace(trace);
-
-    // console.log(`   ✅ Extracted ${learningResult.template.steps.length} workflow steps`);
-    // console.log(`   ✅ Confidence: ${(learningResult.confidence * 100).toFixed(1)}%`);
-    // console.log(`   ✅ Identified ${learningResult.template.variables?.length || 0} variables`);
-    // console.log(`   ✅ Duration: ${(learningResult.duration / 1000).toFixed(2)}s`);
-
-    // const templateStore = new TemplateStore({ baseDir: TEMPLATES_DIR });
-    // await templateStore.save(learningResult.template);
-
-    // console.log(`   ✅ Template saved: ${learningResult.template.id}`);
-    // console.log(`   ✅ Template name: ${learningResult.template.name}`);
-
-    // // Display template summary
-    // console.log('\n   📋 Learned Template:');
-    // learningResult.template.steps.forEach((step, i) => {
-    //   console.log(`      ${i + 1}. ${step.intent}`);
-    // });
-
-    // // Display extracted variables
-    // if (learningResult.template.variables && learningResult.template.variables.length > 0) {
-    //   console.log('\n   🔧 Extracted Variables:');
-    //   learningResult.template.variables.forEach((v, i) => {
-    //     console.log(`      ${i + 1}. ${v.name}: ${v.description} (default: ${v.defaultValue || 'none'})`);
-    //   });
-    // }
-
-    // ========================================================================
-    // PHASE 3: EXECUTE (Using AI Agent)
-    // ========================================================================
- 
-
     const goal: TestGoal = {
       id: 'tc001-integration',
       description: 'Navigate to Discover page, set time range to 2 months, and verify Download CSV button is visible',
